@@ -55,7 +55,7 @@ def lookup_scores(mssv_input):
         return None
 
 # 5. Giao diện Streamlit (Không thay đổi)
-st.title('🤖 Chatbot Tra Cứu Điểm Số (Excel)')
+st.title('🤖 Tra Cứu Điểm_ELC3020')
 st.markdown('---')
 
 st.header('Nhập Mã Số Sinh Viên (MSSV)')
@@ -77,4 +77,5 @@ if st.button('Tra Cứu Điểm'):
             else:
                 st.error(f'❌ Không tìm thấy điểm số cho MSSV: **{mssv_input}**.')
     else:
+
         st.warning('Vui lòng nhập Mã Số Sinh Viên để tra cứu.')
