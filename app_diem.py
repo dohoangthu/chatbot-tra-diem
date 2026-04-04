@@ -39,15 +39,15 @@ def load_data():
 
 # Hàm bôi đen và tô màu dòng quan trọng
 def highlight_row(row):
-    # Kiểm tra nếu tên thành phần là Thanh_phan_1 hoặc Thanh_phan_2
-    if any(tp in row['Thành phần'] for tp in ['Thanh_phan_1', 'Thanh_phan_2']):
-        return ['background-color: #f0f7ff; font-weight: bold; color: #1f77b4'] * len(row)
+    # Kiểm tra nếu tên thành phần là Thanh phan 1 hoặc Thanh phan 2 (đã replace _ thành space)
+    if 'Thanh phan 1' in row['Thành phần'] or 'Thanh phan 2' in row['Thành phần']:
+        return ['background-color: #ffe6cc; font-weight: bold; color: #000000'] * len(row)
     return [''] * len(row)
 
 # --- GIAO DIỆN ---
 st.set_page_config(page_title="Tra cứu điểm ELC3020", layout="centered")
 st.title('📊 Tra cứu Điểm ELC3020')
-st.info("Khoa Thương mại điện tử - Đại học Kinh tế Đà Nẵng")
+st.info("Khoa Thương mại điện tử - Trường Đại học Kinh tế Đà Nẵng")
 
 df = load_data()
 
@@ -76,9 +76,14 @@ if df is not None:
                         val = student[col]
                         # Thay dấu gạch dưới bằng khoảng trắng cho đẹp
                         clean_name = col.replace('_', ' ')
+                        # Format điểm: nếu có giá trị thì làm tròn 1 chữ số thập phân
+                        if pd.notna(val):
+                            formatted_val = f"{val:.1f}"
+                        else:
+                            formatted_val = "-"
                         display_list.append({
                             "Thành phần": clean_name, 
-                            "Điểm số": val if pd.notna(val) else "-"
+                            "Điểm số": formatted_val
                         })
                 
                 score_df = pd.DataFrame(display_list)
