@@ -6,7 +6,7 @@ import os
 excel_files = [f for f in os.listdir('.') if f.endswith('.xlsx')]
 FILE_PATH = excel_files[0] if excel_files else 'ELC3020_50K22_1_Diem.xlsx'
 
-# Danh sách cột điểm (Cập nhật theo file mới - tên Tiếng Việt có dấu)
+# Danh sách cột điểm (Cập nhật theo file mới - có các cột điểm chính thức)
 SCORE_COLUMNS = [
     'Điểm danh 1', 
     'Điểm danh 2', 
@@ -14,12 +14,22 @@ SCORE_COLUMNS = [
     'Kiểm tra tiền xử lý dữ liệu', 
     'Kiểm tra data mining', 
     'Điểm cộng',
-    'Thành phần 1', 
+    'Thành phần 1',
+    'Thành phần 1 chính thức (nếu Thành phần 1 > 10 thì lấy 10)',
     'Biểu đồ nâng cao (15% TP2)', 
     'Tư duy phân tích và xây dựng dashboard (15% TP2)',
     'Thi giữa kỳ (70% TP2)', 
-    'Điểm dư từ TP1 (x 1/3 + TP2)', 
-    'Thành phần 2'
+    'Thành phần 2',
+    'Điểm dư từ TP1 ',
+    'Thành phần 2 chính thức = Thành phần 2 + Điểm dư từ TP1/3'
+]
+
+# Danh sách các cột cần bôi đậm (4 cột điểm tổng kết)
+HIGHLIGHT_COLUMNS = [
+    'Thành phần 1',
+    'Thành phần 1 chính thức (nếu Thành phần 1 > 10 thì lấy 10)',
+    'Thành phần 2',
+    'Thành phần 2 chính thức = Thành phần 2 + Điểm dư từ TP1/3'
 ]
 
 @st.cache_data
@@ -46,8 +56,8 @@ def load_data():
 
 # Hàm bôi đen và tô màu dòng quan trọng
 def highlight_row(row):
-    # Kiểm tra nếu tên thành phần là Thành phần 1 hoặc Thành phần 2
-    if 'Thành phần 1' in row['Thành phần'] or 'Thành phần 2' in row['Thành phần']:
+    # Kiểm tra nếu tên thành phần nằm trong danh sách cần bôi đậm
+    if any(col in row['Thành phần'] for col in HIGHLIGHT_COLUMNS):
         return ['background-color: #ffe6cc; font-weight: bold; color: #000000'] * len(row)
     return [''] * len(row)
 
@@ -93,7 +103,7 @@ if df is not None:
                 
                 score_df = pd.DataFrame(display_list)
                 
-                # Áp dụng bôi đen
+                # Áp dụng bôi đậm cho 4 cột điểm tổng kết
                 styled_df = score_df.style.apply(highlight_row, axis=1)
                 st.table(styled_df)
             else:
