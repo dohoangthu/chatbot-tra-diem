@@ -1,109 +1,86 @@
 import pandas as pd
 import streamlit as st
 
-# 1. Đặt tên file Excel mới (chú ý tên file phải chính xác)
-FILE_PATH = '261_ELC3020_diem.xlsx' 
+# 1. Cấu hình file và cột
+FILE_PATH = 'ELC3020_50K22.1_Diem.xlsx' 
 
-# 2. CẬP NHẬT CÁC CỘT ĐIỂM MỚI
-# Dựa trên file mới của bạn, tôi đã thay đổi danh sách này
 SCORE_COLUMNS = [
-    'Data_mining', 
-    'Laptop_THPT', 
-    'Tu_duy_Dashboard', 
-    'Tien_xu_ly_du_lieu',
-    'Bieu_do_nang_cao', 
-    'Chuong1', 
-    'Diem_danh', 
-    'Diem_cong',
-    # Các cột mới cập nhật
-    'TP1_cu_(20%)', 
-    'TP2_(cu_20%)', 
-    'TP1_(moi_10%)', 
-    'TP2_(moi_30%)'
+    'Diem_danh_1', 
+    'Diem_danh_2', 
+    'Kiem_tra_chuong_1', 
+    'Kiem_tra_Tien_xu_ly_du_lieu',
+    'Kiem_tra_Data_mining', 
+    'Thanh_phan_1',  # Cột cần bôi đậm
+    'Bieu_do_nang_cao (15% TP2)', 
+    'Tu_duy_phan_tich_xay_dung_dashboard (15% TP2)',
+    'Thi_giua_ky (70% TP2)', 
+    'Diem_cong_TP2 (x 1/3)', 
+    'Thanh_phan_2'   # Cột cần bôi đậm
 ]
 
-# 3. Đọc file Excel
-try:
-    # Đọc file Excel
-    df = pd.read_excel(FILE_PATH)
-    
-    # Chuẩn hóa tên cột: Xóa khoảng trắng thừa ở đầu/cuối tên cột (nếu có) để tránh lỗi
-    df.columns = df.columns.str.strip()
-    
-    # Đảm bảo cột MSSV (MSV) có định dạng chuỗi
-    df['MSV'] = df['MSV'].astype(str)
-
-except FileNotFoundError:
-    st.error(f"Lỗi nghiêm trọng: Không tìm thấy file '{FILE_PATH}'.")
-    st.error("Vui lòng kiểm tra lại tên file và đảm bảo nó nằm cùng thư mục với code.")
-    st.stop()
-except Exception as e:
-    st.error(f"Lỗi khi đọc file Excel: {e}")
-    st.stop()
-
-# 4. Hàm tra cứu
-def lookup_scores(mssv_input):
-    """
-    Hàm tra cứu điểm dựa trên MSSV.
-    """
-    mssv_input = str(mssv_input).strip()
-    
-    # Lọc DataFrame
-    result = df[df['MSV'] == mssv_input]
-    
-    if not result.empty:
-        # Lấy thông tin
-        ten = result['Ho_va_ten_dem'].iloc[0] + ' ' + result['Ten'].iloc[0]
-        lop = result['Lop'].iloc[0]
-        
-        # Lấy điểm số, xử lý trường hợp cột không tồn tại để tránh crash ứng dụng
-        scores = {}
-        for col in SCORE_COLUMNS:
-            if col in result.columns:
-                scores[col] = result[col].iloc[0]
-            else:
-                scores[col] = "Không có dữ liệu" # Hoặc để trống tùy bạn
-
-        return {
-            'MSSV': mssv_input,
-            'Họ và Tên': ten,
-            'Lớp': lop,
-            'Điểm số': scores
-        }
-    else:
+@st.cache_data
+def load_data():
+    try:
+        df = pd.read_excel(FILE_PATH)
+        df.columns = df.columns.str.strip()
+        df['MSSV'] = df['MSSV'].astype(str)
+        df['Họ và Tên'] = df['Ho va ten dem'].fillna('') + " " + df['Ten'].fillna('')
+        return df
+    except Exception as e:
+        st.error(f"Lỗi khi đọc file: {e}")
         return None
 
-# 5. Giao diện Streamlit
-st.set_page_config(page_title="Tra Cứu Điểm ELC3020", page_icon="🎓")
+# Hàm để định dạng in đậm dòng cụ thể
+def highlight_important_rows(row):
+    # Nếu tên thành phần là Thanh_phan_1 hoặc Thanh_phan_2 thì in đậm
+    if row['Thành phần'] in ['Thanh_phan_1', 'Thanh_phan_2']:
+        return ['font-weight: bold; background-color: #f0f2f6'] * len(row)
+    return [''] * len(row)
 
-st.title('🤖 Tra Cứu Điểm_ELC3020')
-st.markdown('---')
+# 2. Giao diện ứng dụng
+st.set_page_config(page_title="Tra cứu điểm", page_icon="🎓")
 
-st.header('Nhập Mã Số Sinh Viên (MSSV)')
+st.title('🎓 Tra cứu Điểm ELC3020')
+st.markdown('**Khoa Thương mại điện tử - Đại học Kinh tế Đà Nẵng**')
 
-mssv_input = st.text_input('MSSV của bạn:', placeholder='Ví dụ: 221121302202')
+df = load_data()
 
-if st.button('Tra Cứu Điểm', type="primary"):
-    if mssv_input:
-        with st.spinner('Đang tìm kiếm...'):
-            data = lookup_scores(mssv_input)
+if df is not None:
+    mssv_input = st.text_input('Nhập Mã số sinh viên (MSSV):', placeholder='Ví dụ: 241124022129')
+
+    if st.button('Tra cứu', type="primary"):
+        if mssv_input:
+            result = df[df['MSSV'] == mssv_input.strip()]
             
-            if data:
-                st.success(f'✅ Tìm thấy: **{data["Họ và Tên"]}** - Lớp **{data["Lớp"]}**')
+            if not result.empty:
+                student = result.iloc[0]
+                st.success(f"✅ Sinh viên: **{student['Họ và Tên']}**")
                 
-                st.subheader('Bảng Điểm Chi Tiết')
+                col1, col2 = st.columns(2)
+                col1.metric("Lớp", student['Lop'])
+                col2.metric("MSSV", student['MSSV'])
                 
-                # Tạo DataFrame từ dict điểm số
-                score_df = pd.DataFrame(list(data['Điểm số'].items()), columns=['Thành Phần', 'Điểm'])
+                st.divider()
+                st.subheader('📊 Bảng điểm chi tiết')
                 
-                # Định dạng hiển thị bảng cho đẹp hơn
-                st.dataframe(
-                    score_df, 
-                    hide_index=True, 
-                    use_container_width=True
-                )
+                # Tạo DataFrame để hiển thị dọc cho dễ nhìn trên điện thoại
+                display_data = []
+                for col in SCORE_COLUMNS:
+                    if col in df.columns:
+                        val = student[col]
+                        display_val = val if pd.notna(val) else "-"
+                        display_data.append({"Thành phần": col, "Điểm": display_val})
+                
+                score_df = pd.DataFrame(display_data)
+
+                # Áp dụng hàm bôi đậm và hiển thị
+                styled_df = score_df.style.apply(highlight_important_rows, axis=1)
+                
+                # Sử dụng st.table để hiển thị bảng tĩnh và rõ ràng
+                st.table(styled_df)
                 
             else:
-                st.error(f'❌ Không tìm thấy dữ liệu cho MSSV: **{mssv_input}**.')
-    else:
-        st.warning('⚠️ Vui lòng nhập Mã Số Sinh Viên.')
+                st.warning("⚠️ Không tìm thấy MSSV này. Vui lòng kiểm tra lại.")
+
+st.markdown("---")
+st.caption("Tra cứu điểm học phần Nhập môn KH DL trong Kinh doanh.")
