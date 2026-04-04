@@ -18,7 +18,7 @@ SCORE_COLUMNS = [
     'Biểu đồ nâng cao (15% TP2)', 
     'Tư duy phân tích và xây dựng dashboard (15% TP2)',
     'Thi giữa kỳ (70% TP2)', 
-    'Điểm dư từ TP1 (x 1/3) + TP2)', 
+    'Điểm dư từ TP1 (x 1/3 + TP2)', 
     'Thành phần 2'
 ]
 
