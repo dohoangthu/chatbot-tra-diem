@@ -20,7 +20,7 @@ SCORE_COLUMNS = [
     'Tư duy phân tích và xây dựng dashboard (15% TP2)',
     'Thi giữa kỳ (70% TP2)', 
     'Thành phần 2',
-    'Điểm dư từ TP1 ',
+    'Điểm dư từ TP1',
     'Thành phần 2 chính thức = Thành phần 2 + Điểm dư từ TP1/3'
 ]
 
